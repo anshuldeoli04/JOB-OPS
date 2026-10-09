@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JOB-OPS Dashboard</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #0f1117;
+      color: #e2e8f0;
+      min-height: 100vh;
+      padding: 24px;
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+    .header h1 { font-size: 24px; font-weight: 700; color: #f8fafc; }
+    .header p { font-size: 14px; color: #64748b; margin-top: 2px; }
+    .badge {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-size: 12px;
+      color: #94a3b8;
+    }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+    .stat-card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+    }
+    .stat-card .num { font-size: 32px; font-weight: 700; }
+    .stat-card .label { font-size: 12px; color: #64748b; margin-top: 4px; }
+    .green { color: #4ade80; }
+    .blue { color: #60a5fa; }
+    .yellow { color: #facc15; }
+    .purple { color: #c084fc; }
+    .red { color: #f87171; }
+    .gray { color: #94a3b8; }
+
+    .section-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #94a3b8;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: 12px;
+    }
+
+    .filters {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    .filter-btn {
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: #94a3b8;
+      padding: 6px 14px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 0.15s;
+    }
+    .filter-btn:hover, .filter-btn.active {
+      background: #334155;
+      color: #f1f5f9;
+      border-color: #475569;
+    }
+
+    .table-wrapper {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    table { width: 100%; border-collapse: collapse; }
+    thead { background: #0f1117; }
+    th {
+      padding: 12px 16px;
+      text-align: left;
+      font-size: 11px;
+      font-weight: 600;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+    }
+    th:hover { color: #94a3b8; }
+    td { padding: 14px 16px; font-size: 14px; border-top: 1px solid #0f1117; }
+    tr:hover td { background: #243044; }
+
+    .grade-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 10px;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 13px;
+    }
+    .grade-A { background: #052e16; color: #4ade80; }
+    .grade-B { background: #172554; color: #60a5fa; }
+    .grade-C { background: #422006; color: #fb923c; }
+    .grade-D { background: #431407; color: #f97316; }
+    .grade-F { background: #450a0a; color: #f87171; }
+
+    .status-badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+    .status-evaluated { background: #1e3a5f; color: #93c5fd; }
+    .status-applied { background: #1a3a2e; color: #6ee7b7; }
+    .status-interview { background: #2d1b69; color: #c4b5fd; }
+    .status-offer { background: #1a3a2e; color: #4ade80; }
+    .status-rejected { background: #3b1515; color: #fca5a5; }
+    .status-withdrawn { background: #1e293b; color: #94a3b8; }
+
+    .score-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .score-bar-bg {
+      flex: 1;
+      height: 6px;
+      background: #0f1117;
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .score-bar-fill { height: 100%; border-radius: 3px; }
+    .score-num { font-size: 13px; font-weight: 600; min-width: 32px; }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #475569;
+    }
+    .empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+
+    .search-box {
+      background: #0f1117;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 8px 14px;
+      color: #e2e8f0;
+      font-size: 14px;
+      width: 240px;
+    }
+    .search-box:focus { outline: none; border-color: #4f46e5; }
+
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .file-input-label {
+      background: #4f46e5;
+      color: white;
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+    }
+    .file-input-label:hover { background: #4338ca; }
+    #fileInput { display: none; }
+    .action-links {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .action-link {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      text-decoration: none;
+      border: 1px solid #334155;
+      background: #0f1117;
+      color: #cbd5e1;
+    }
+    .action-link:hover {
+      border-color: #60a5fa;
+      color: #eff6ff;
+    }
+    .action-link[disabled] {
+      opacity: 0.7;
+      cursor: default;
+      pointer-events: none;
+    }
+    .path-hint {
+      color: #94a3b8;
+      font-size: 11px;
+      word-break: break-all;
+      margin-top: 6px;
+    }
+
+    .info-banner {
+      background: #1e3a5f;
+      border: 1px solid #1d4ed8;
+      border-radius: 10px;
+      padding: 14px 18px;
+      margin-bottom: 24px;
+      font-size: 13px;
+      color: #93c5fd;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div>
+      <h1>🚀 JOB-OPS Dashboard</h1>
+      <p>Free AI-powered job search tracker</p>
+    </div>
+    <span class="badge">Powered by Gemini Free</span>
+  </div>
+
+  <div class="info-banner" id="infoBanner">
+    📂 <strong>Load Data:</strong> Click the "Load applications.json" button and select your <code>data/applications.json</code> file to view your applications.
+  </div>
+
+  <div class="stats" id="statsSection">
+    <div class="stat-card"><div class="num gray" id="statTotal">0</div><div class="label">Total Evaluated</div></div>
+    <div class="stat-card"><div class="num green" id="statA">0</div><div class="label">Grade A (Apply Now)</div></div>
+    <div class="stat-card"><div class="num blue" id="statApplied">0</div><div class="label">Applied</div></div>
+    <div class="stat-card"><div class="num purple" id="statInterview">0</div><div class="label">Interviews</div></div>
+    <div class="stat-card"><div class="num yellow" id="statOffer">0</div><div class="label">Offers</div></div>
+    <div class="stat-card"><div class="num gray" id="statAvgScore">-</div><div class="label">Avg Score</div></div>
+  </div>
+
+  <div class="toolbar">
+    <div class="filters">
+      <button class="filter-btn active" onclick="filterGrade('ALL')">All</button>
+      <button class="filter-btn" onclick="filterGrade('A')">🟢 Grade A</button>
+      <button class="filter-btn" onclick="filterGrade('B')">🔵 Grade B</button>
+      <button class="filter-btn" onclick="filterGrade('C')">🟡 Grade C</button>
+      <button class="filter-btn" onclick="filterGrade('D')">🟠 Grade D</button>
+      <button class="filter-btn" onclick="filterGrade('F')">🔴 Skip</button>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <input class="search-box" id="searchBox" type="text" placeholder="🔍 Search company/role..." oninput="renderTable()" />
+      <label class="file-input-label" for="fileInput">📂 Load applications.json</label>
+      <input type="file" id="fileInput" accept=".json" onchange="loadFile(event)" />
+    </div>
+  </div>
+
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th onclick="sortBy('grade')">Grade</th>
+          <th onclick="sortBy('score')">Score</th>
+          <th onclick="sortBy('company')">Company</th>
+          <th onclick="sortBy('role')">Role</th>
+          <th>Location</th>
+          <th>Salary</th>
+          <th onclick="sortBy('status')">Status</th>
+          <th>Actions</th>
+          <th onclick="sortBy('timestamp')">Date</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody">
+        <tr><td colspan="9"><div class="empty-state"><div class="icon">📂</div><p>Load applications.json using the button above</p></div></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    let allApps = [];
+    let currentGrade = 'ALL';
+    let currentSort = { key: 'score', dir: -1 };
+
+    function toFileHref(filePath) {
+      if (!filePath) return '';
+      if (/^https?:\/\//i.test(filePath) || /^file:\/\//i.test(filePath)) return filePath;
+      const normalized = String(filePath).replace(/\\/g, '/');
+      if (/^[A-Za-z]:\//.test(normalized)) return 'file:///' + normalized;
+      return normalized;
+    }
+
+    function escapeHtml(value) {
+      return String(value || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function renderLocalFileLink(label, filePath) {
+      const href = toFileHref(filePath);
+      const safePath = escapeHtml(filePath);
+      if (window.location.protocol === 'http:' || window.location.protocol === 'https:') {
+        return `<div><button class="action-link" type="button" onclick="copyPath(${JSON.stringify(filePath)})">Copy ${label} Path</button><div class="path-hint">${safePath}</div></div>`;
+      }
+      return `<a class="action-link" href="${href}" target="_blank" rel="noreferrer">${label}</a>`;
+    }
+
+    async function copyPath(filePath) {
+      try {
+        await navigator.clipboard.writeText(filePath);
+        alert('Path copied. Open it directly from your file explorer or local file browser tab.');
+      } catch {
+        alert('Could not copy path automatically. Path: ' + filePath);
+      }
+    }
+
+    function buildActionLinks(app) {
+      const links = [];
+      const applyUrl = app.apply_url || app.url;
+      if (applyUrl) {
+        links.push(`<a class="action-link" href="${escapeHtml(applyUrl)}" target="_blank" rel="noreferrer">Apply</a>`);
+      }
+      if (app.resume_pdf) {
+        links.push(renderLocalFileLink('Resume PDF', app.resume_pdf));
+      } else if (app.resume_html) {
+        links.push(renderLocalFileLink('Resume HTML', app.resume_html));
+      }
+      return links.length ? `<div class="action-links">${links.join('')}</div>` : `<span style="color:#64748b;font-size:12px">-</span>`;
+    }
+
+    function loadFile(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          allApps = JSON.parse(e.target.result);
+          document.getElementById('infoBanner').style.display = 'none';
+          updateStats();
+          renderTable();
+        } catch {
+          alert('Invalid JSON file!');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function updateStats() {
+      document.getElementById('statTotal').textContent = allApps.length;
+      document.getElementById('statA').textContent = allApps.filter(a => a.grade === 'A').length;
+      document.getElementById('statApplied').textContent = allApps.filter(a => ['applied','interview','offer'].includes(a.status)).length;
+      document.getElementById('statInterview').textContent = allApps.filter(a => a.status === 'interview').length;
+      document.getElementById('statOffer').textContent = allApps.filter(a => a.status === 'offer').length;
+      const avg = allApps.length ? (allApps.reduce((s,a) => s + (a.score||0), 0) / allApps.length).toFixed(1) : '-';
+      document.getElementById('statAvgScore').textContent = avg;
+    }
+
+    function filterGrade(grade) {
+      currentGrade = grade;
+      document.querySelectorAll('.filter-btn').forEach(b => {
+        b.classList.toggle('active', b.textContent.includes(grade) || (grade === 'ALL' && b.textContent === 'All'));
+      });
+      renderTable();
+    }
+
+    function sortBy(key) {
+      if (currentSort.key === key) currentSort.dir *= -1;
+      else { currentSort.key = key; currentSort.dir = -1; }
+      renderTable();
+    }
+
+    function scoreColor(score) {
+      if (score >= 8) return '#4ade80';
+      if (score >= 6) return '#60a5fa';
+      if (score >= 4) return '#fb923c';
+      return '#f87171';
+    }
+
+    function safeDate(timestamp) {
+      if (!timestamp) return '-';
+      const date = new Date(timestamp);
+      return Number.isNaN(date.getTime()) ? '-' : date.toLocaleDateString('en-IN');
+    }
+
+    function safeGrade(value) {
+      const grade = String(value || '?').toUpperCase();
+      return ['A', 'B', 'C', 'D', 'F'].includes(grade) ? grade : '?';
+    }
+
+    function safeStatus(value) {
+      const status = String(value || 'evaluated').toLowerCase();
+      return /^[a-z0-9_-]+$/.test(status) ? status : 'evaluated';
+    }
+
+    function safeScore(value) {
+      const score = Number(value);
+      return Number.isFinite(score) ? Math.max(0, Math.min(10, score)) : 0;
+    }
+
+    function renderTable() {
+      const search = document.getElementById('searchBox').value.toLowerCase();
+      let apps = allApps.filter(a => {
+        const matchGrade = currentGrade === 'ALL' || a.grade === currentGrade;
+        const matchSearch = !search || 
+          (a.company||'').toLowerCase().includes(search) || 
+          (a.role||'').toLowerCase().includes(search);
+        return matchGrade && matchSearch;
+      });
+
+      apps.sort((a, b) => {
+        let av = a[currentSort.key] || '', bv = b[currentSort.key] || '';
+        if (typeof av === 'number') return (av - bv) * currentSort.dir;
+        return String(av).localeCompare(String(bv)) * currentSort.dir;
+      });
+
+      const tbody = document.getElementById('tableBody');
+      if (apps.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="9"><div class="empty-state"><div class="icon">🔍</div><p>No matching applications found</p></div></td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = apps.map(a => {
+        const grade = safeGrade(a.grade);
+        const status = safeStatus(a.status);
+        const score = safeScore(a.score);
+        return `
+        <tr>
+          <td><span class="grade-badge grade-${grade}">${escapeHtml(grade)}</span></td>
+          <td>
+            <div class="score-bar">
+              <span class="score-num" style="color:${scoreColor(score)}">${escapeHtml(score)}</span>
+              <div class="score-bar-bg">
+                <div class="score-bar-fill" style="width:${score * 10}%;background:${scoreColor(score)}"></div>
+              </div>
+            </div>
+          </td>
+          <td><strong>${escapeHtml(a.company || 'Unknown')}</strong></td>
+          <td style="color:#94a3b8">${escapeHtml(a.role || 'Unknown')}</td>
+          <td style="color:#64748b;font-size:13px">${escapeHtml(a.location || '-')}</td>
+          <td style="color:#64748b;font-size:12px">${escapeHtml(a.salary_estimate || '-')}</td>
+          <td><span class="status-badge status-${status}">${escapeHtml(status)}</span></td>
+          <td>${buildActionLinks(a)}</td>
+          <td style="color:#64748b;font-size:12px">${escapeHtml(safeDate(a.timestamp))}</td>
+        </tr>
+      `;
+      }).join('');
+    }
+  </script>
+</body>
+</html>

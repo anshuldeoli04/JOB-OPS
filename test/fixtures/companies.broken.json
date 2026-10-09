@@ -1,0 +1,7 @@
+[
+  { "name": "Anthropic", "slug": "anthropic", "type": "greenhouse" },
+  { "name": "Databricks", "slug": "databricks", "type": "greenhouse" },
+  { "name": "Bogus Corp 1", "slug": "bogus-slug-1111", "type": "greenhouse" },
+  { "name": "Bogus Corp 2", "slug": "bogus-slug-2222", "type": "greenhouse" },
+  { "name": "Bogus Corp 3", "slug": "bogus-slug-3333", "type": "greenhouse" }
+]

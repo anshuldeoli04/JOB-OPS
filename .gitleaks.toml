@@ -1,0 +1,15 @@
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Global allowlist for mock test fixtures and example configs"
+paths = [
+  '''.*\.example\..*'''
+]
+regexes = [
+  '''AIzaDummy.*''',
+  '''AIzaSyNewTestKey.*''',
+  '''AIzaSyTestKey.*''',
+  '''gsk_Dummy.*''',
+  '''AIzaSyMock.*'''
+]

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<title>{{NAME}} Resume</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Arial,'Segoe UI',sans-serif;font-size:10.5pt;line-height:1.42;color:#111827;background:#fff;max-width:21cm;margin:0 auto;padding:1.25cm 1.55cm}
+.hdr{border-bottom:1.5px solid #111827;padding-bottom:7px;margin-bottom:12px}
+.name{font-size:22pt;font-weight:700;line-height:1.1;margin-bottom:4px}
+.role{font-size:10.5pt;font-weight:600;margin-bottom:5px}
+.contacts{font-size:9.4pt;color:#1f2937;line-height:1.45}
+.sec{margin-bottom:11px}
+.sec-title{font-size:12pt;font-weight:700;border-bottom:1px solid #d1d5db;padding-bottom:2px;margin-bottom:6px}
+.summary{font-size:10pt;color:#1f2937}
+.entry{margin-bottom:8px;page-break-inside:avoid}
+.entry-title{font-weight:700}
+.entry-meta,.entry-tech,.entry-co,.edu-sch,.edu-grade{color:#374151}
+.entry-tech{font-size:9.3pt;margin:1px 0 2px}
+ul.bul{margin:2px 0 0 18px}
+ul.bul li{margin-bottom:2px}
+.skills-line{font-size:10pt}
+strong{font-weight:700}
+@media print{body{padding:1cm 1.35cm}a{color:inherit;text-decoration:none}}
+@page{size:A4;margin:0}
+</style>
+</head>
+<body>
+<div class="hdr">
+  <div class="name">{{NAME}}</div>
+  <div class="role">{{TARGET_ROLE}}</div>
+  <div class="contacts">{{CONTACTS_HTML}}</div>
+</div>
+{{SUMMARY_HTML}}
+{{EDUCATION_HTML}}
+{{PROJECTS_HTML}}
+{{EXPERIENCE_HTML}}
+{{SKILLS_HTML}}
+{{SOFT_SKILLS_HTML}}
+{{CERTS_HTML}}
+{{ACHIEVEMENTS_HTML}}
+</body>
+</html>

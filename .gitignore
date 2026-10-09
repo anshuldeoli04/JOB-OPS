@@ -121,5 +121,4 @@ test-tmp*
 # Internal Developer & Audit Dumps
 FULL_CODEBASE.md
 TASK_BRIEF.md
-CODE_OF_CONDUCT.md
 .archify/

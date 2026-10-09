@@ -33,7 +33,7 @@ jobs:
         run: node scanner.mjs --verify-sources
 
       - name: Upload Health Verification Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: verify-sources
           path: data/verify-sources.json

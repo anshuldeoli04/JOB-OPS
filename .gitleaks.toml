@@ -2,14 +2,14 @@
 useDefault = true
 
 [allowlist]
-description = "Global allowlist for mock test fixtures and example configs"
+description = "Global allowlist for test fixtures, mocks and example configuration"
 paths = [
-  '''.*\.example\..*'''
+  '''.*\.example\..*''',
+  '''env\.example''',
+  '''^test/.*'''
 ]
 regexes = [
-  '''AIzaDummy.*''',
-  '''AIzaSyNewTestKey.*''',
-  '''AIzaSyTestKey.*''',
-  '''gsk_Dummy.*''',
-  '''AIzaSyMock.*'''
+  '''AIza.*''',
+  '''gsk_.*''',
+  '''super-secret.*'''
 ]

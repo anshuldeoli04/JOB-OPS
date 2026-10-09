@@ -539,12 +539,13 @@ export function validateEvaluation(raw = {}, context = {}) {
 }
 
 export function loadConfig({ requireApiKey = true } = {}) {
-  const loaded = readFirstExistingJson(CONFIG_FILES);
-  if (!loaded) {
+  const baseConfig = loadJsonFile(path.resolve(REPO_ROOT, "config.json"), { fallback: null });
+  const localConfig = loadJsonFile(path.resolve(REPO_ROOT, "config.local.json"), { fallback: null });
+  if (!baseConfig && !localConfig) {
     throw new Error("Config file missing. Create config.local.json from config.json first.");
   }
 
-  const jsonConfig = loaded.value || {};
+  const jsonConfig = { ...(baseConfig || {}), ...(localConfig || {}) };
   const config = {
     gemini_model: process.env.GEMINI_MODEL || jsonConfig.gemini_model,
     groq_model: process.env.GROQ_MODEL || jsonConfig.groq_model,
@@ -557,6 +558,10 @@ export function loadConfig({ requireApiKey = true } = {}) {
     allow_unrestricted_remote: jsonConfig.allow_unrestricted_remote ?? true,
     fresher_max_min_years: jsonConfig.fresher_max_min_years ?? 0,
     search_profiles: Array.isArray(jsonConfig.search_profiles) ? jsonConfig.search_profiles : [],
+    disabled_sources: Array.isArray(jsonConfig.disabled_sources)
+      ? jsonConfig.disabled_sources
+      : ["wellfound", "naukri", "internshala"],
+    expected_min_cards: jsonConfig.expected_min_cards,
     experience_years: jsonConfig.experience_years,
     experience_level: jsonConfig.experience_level,
     expected_ctc_lpa: jsonConfig.expected_ctc_lpa,

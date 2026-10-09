@@ -386,6 +386,7 @@ export async function runSetupWizard({ interactive = true, checkOnly = false } =
     // Save non-secret config to config.local.json, merging into any existing keys
     const existingConfigLocal = loadJsonFile(CONFIG_LOCAL_FILE, { fallback: {} }) || {};
     const configData = {
+      ...existingConfig,
       ...existingConfigLocal,
       name,
       gemini_model: DEFAULT_GEMINI_MODEL,
@@ -396,7 +397,10 @@ export async function runSetupWizard({ interactive = true, checkOnly = false } =
       experience_years: experienceYears,
       expected_ctc_lpa: expectedCtcLpa,
       allow_unrestricted_remote: true,
-      disabled_sources: existingConfigLocal.disabled_sources || ["wellfound"],
+      disabled_sources:
+        existingConfigLocal.disabled_sources ||
+        existingConfig.disabled_sources ||
+        ["wellfound", "naukri", "internshala"],
     };
     writeJsonFileAtomic(CONFIG_LOCAL_FILE, configData);
     console.log("✅ User preferences saved to config.local.json");

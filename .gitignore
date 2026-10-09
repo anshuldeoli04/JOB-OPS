@@ -1,0 +1,125 @@
+# ==============================================================================
+# JOB-OPS Comprehensive .gitignore
+# Prevents accidental leak of credentials, AI keys, personal CVs, databases,
+# scraped scan results, sessions, logs, and build artifacts.
+# ==============================================================================
+
+# Dependencies
+node_modules/
+frontend/node_modules/
+
+# Exclude Web Dashboard & Server (CLI-Only Release)
+frontend/
+
+# Environment Variables & Secrets (All variants across root and frontend)
+.env
+.env.*
+!.env.example
+!env.example
+frontend/.env
+frontend/.env.*
+!frontend/.env.example
+frontend/server/.env
+frontend/server/.env.*
+!frontend/server/.env.example
+config.local.json
+
+# Personal Resume / CV Files & Generated Applications
+cv.md
+cv.txt
+cv.*
+!cv.example.md
+resume.pdf
+resume.docx
+resume.md
+resume.txt
+*resume*.pdf
+*resume*.docx
+*cv*.pdf
+*cv*.docx
+*.pdf
+
+# Preserve Generic Code Templates
+!templates/
+!templates/**
+
+# Production & Scraped Job Data (Zero Leakage of Real Job History)
+data/
+reports/
+output/
+frontend/server/data/
+frontend/server/db/
+downloads/
+temp/
+tmp/
+scratch/
+scratch*
+
+# Database & Dump Files
+*.db
+*.sqlite
+*.sqlite3
+*.sql.gz
+*.dump
+*.bak
+*.backup
+
+# Ephemeral State, Lockfiles & User Sessions
+session.json
+usage.json
+data/*.lock
+output/**/*.lock
+reports/**/*.lock
+*.pid
+*.tmp
+
+# Cryptographic Keys, Certificates & Tokens
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+*.cer
+*.token
+id_rsa*
+id_ed25519*
+
+# Build Artifacts & Bundles
+frontend/dist/
+frontend/temp-dist/
+
+# Logs & Diagnostics
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.out
+*.err
+*.out.txt
+*.err.txt
+server.out.txt
+server.err.txt
+frontend/server.out.txt
+frontend/server.err.txt
+frontend/server.log
+frontend/server.err.log
+frontend/vite.log
+frontend/vite.err.log
+
+# Operating System & Editor Metadata
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Temporary test artifacts
+test-tmp*
+
+# Internal Developer & Audit Dumps
+FULL_CODEBASE.md
+TASK_BRIEF.md
+CODE_OF_CONDUCT.md
+.archify/

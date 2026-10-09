@@ -1,0 +1,46 @@
+{
+  "name": "job-ops",
+  "version": "4.0.0",
+  "type": "module",
+  "description": "Autonomous AI job pipeline for scanning, evaluating, and tailoring applications for early-career software roles.",
+  "license": "MIT",
+  "bin": {
+    "job-ops": "./autoflow.mjs"
+  },
+  "files": [
+    "*.mjs",
+    "llm/",
+    "templates/",
+    "companies.json",
+    "config.example.json",
+    "cv.example.md",
+    "schema_pg.sql"
+  ],
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "install:browsers": "npx playwright install chromium",
+    "test": "node --import ./test/setup.mjs --test test/*.test.mjs",
+    "test:offline": "node --import ./test/setup.mjs --test test/*.test.mjs",
+    "smoke": "node test/smoke.test.mjs",
+    "evaluate": "node evaluate.mjs",
+    "tracker": "node tracker.mjs",
+    "scanner": "node scanner.mjs",
+    "scan-eval": "node scan-evaluate.mjs",
+    "retry-errors": "node scan-evaluate.mjs --retry-errors --mode=all",
+    "resume": "node resume-builder.mjs",
+    "setup": "node setup-wizard.mjs",
+    "init": "node setup-wizard.mjs",
+    "setup-check": "node setup-check.mjs",
+    "autoflow": "node autoflow.mjs"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.21.0",
+    "pdf-parse": "^2.4.5",
+    "playwright": "^1.50.0",
+    "playwright-extra": "^4.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2",
+    "user-agents": "^1.1.352"
+  }
+}

@@ -1,0 +1,81 @@
+{
+  "gemini_model": "gemini-2.5-flash",
+  "groq_model": "llama-3.3-70b-versatile",
+  "name": "Candidate Name",
+  "target_roles": [
+    "Software Engineer",
+    "AI/ML Engineer",
+    "Backend Developer",
+    "Full Stack Developer"
+  ],
+  "target_locations": [
+    "Bangalore",
+    "Hyderabad",
+    "Pune",
+    "Delhi NCR",
+    "Remote India"
+  ],
+  "india_locations": [
+    "India",
+    "Pan India",
+    "Work from home",
+    "WFH",
+    "Bengaluru",
+    "Bangalore",
+    "Gurugram",
+    "Gurgaon",
+    "Delhi",
+    "New Delhi",
+    "Delhi NCR",
+    "NCR",
+    "Noida",
+    "Greater Noida",
+    "Mumbai",
+    "Navi Mumbai",
+    "Pune",
+    "Maharashtra",
+    "Hyderabad",
+    "Secunderabad",
+    "Telangana",
+    "Chennai",
+    "Tamil Nadu",
+    "Kolkata",
+    "West Bengal",
+    "Ahmedabad",
+    "Gujarat",
+    "Jaipur",
+    "Rajasthan",
+    "Chandigarh",
+    "Mohali",
+    "Indore",
+    "Kochi",
+    "Cochin",
+    "Kerala",
+    "Karnataka"
+  ],
+  "allow_unrestricted_remote": true,
+  "fresher_max_min_years": 0,
+  "search_profiles": [
+    "java",
+    "spring",
+    "backend",
+    "sde",
+    "software developer",
+    "software engineer",
+    "full stack",
+    "associate engineer",
+    "trainee"
+  ],
+  "expected_min_cards": {
+    "naukri": 15,
+    "internshala": 20
+  },
+  "disabled_sources": [
+    "wellfound",
+    "naukri",
+    "internshala"
+  ],
+  "experience_years": 0,
+  "experience_level": "fresher",
+  "expected_ctc_lpa": "4-8"
+}

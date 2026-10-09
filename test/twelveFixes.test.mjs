@@ -2,17 +2,41 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { existsSync, unlinkSync } from "node:fs";
 import path from "node:path";
-import { generateToken, verifyToken } from "../frontend/server/utils/tokenAuth.js";
-import { withUserWorkspaceLock } from "../frontend/server/utils/workspaceLock.js";
-import { getWorkspacePath } from "../frontend/server/utils/userWorkspace.js";
 import { safeJsonParse } from "../llm/jsonUtils.mjs";
-import { translateQuery } from "../frontend/server/utils/db.js";
-import { buildVisibleScanRows } from "../frontend/src/utils/scanFormatting.js";
-import { loadOpsSettings, saveOpsSettings } from "../frontend/server/utils/opsStore.js";
-import { toPublicFileUrl } from "../frontend/server/utils/fileLinks.js";
-import { writeEvaluationReport } from "../frontend/server/utils/dbSync.js";
 
-test("Fix 1: generateToken & verifyToken works and detects tampering", () => {
+const hasFrontend = existsSync(path.resolve("frontend/server/index.js"));
+
+let generateToken, verifyToken, withUserWorkspaceLock, getWorkspacePath, translateQuery, buildVisibleScanRows, loadOpsSettings, saveOpsSettings, toPublicFileUrl, writeEvaluationReport;
+
+if (hasFrontend) {
+  const tokenAuth = await import("../frontend/server/utils/tokenAuth.js");
+  generateToken = tokenAuth.generateToken;
+  verifyToken = tokenAuth.verifyToken;
+
+  const workspaceLock = await import("../frontend/server/utils/workspaceLock.js");
+  withUserWorkspaceLock = workspaceLock.withUserWorkspaceLock;
+
+  const userWorkspace = await import("../frontend/server/utils/userWorkspace.js");
+  getWorkspacePath = userWorkspace.getWorkspacePath;
+
+  const db = await import("../frontend/server/utils/db.js");
+  translateQuery = db.translateQuery;
+
+  const scanFormatting = await import("../frontend/src/utils/scanFormatting.js");
+  buildVisibleScanRows = scanFormatting.buildVisibleScanRows;
+
+  const opsStore = await import("../frontend/server/utils/opsStore.js");
+  loadOpsSettings = opsStore.loadOpsSettings;
+  saveOpsSettings = opsStore.saveOpsSettings;
+
+  const fileLinks = await import("../frontend/server/utils/fileLinks.js");
+  toPublicFileUrl = fileLinks.toPublicFileUrl;
+
+  const dbSync = await import("../frontend/server/utils/dbSync.js");
+  writeEvaluationReport = dbSync.writeEvaluationReport;
+}
+
+test("Fix 1: generateToken & verifyToken works and detects tampering", { skip: !hasFrontend }, () => {
   const token = generateToken(42);
   assert.ok(token.includes("."));
   const verified = verifyToken(token);
@@ -23,7 +47,7 @@ test("Fix 1: generateToken & verifyToken works and detects tampering", () => {
   assert.strictEqual(verifyToken(tampered), null);
 });
 
-test("Fix 2: withUserWorkspaceLock runs distinct user tasks concurrently", async () => {
+test("Fix 2: withUserWorkspaceLock runs distinct user tasks concurrently", { skip: !hasFrontend }, async () => {
   let user1Finished = false;
   let user2Finished = false;
 
@@ -60,7 +84,7 @@ test("Fix 4: safeJsonParse recovers from markdown fences, trailing commas and co
   assert.strictEqual(parsed.strengths.length, 2);
 });
 
-test("Fix 7: translateQuery handles nested parentheses in JSON_OBJECT and JSON_ARRAYAGG without breaking", () => {
+test("Fix 7: translateQuery handles nested parentheses in JSON_OBJECT and JSON_ARRAYAGG without breaking", { skip: !hasFrontend }, () => {
   const sql = `SELECT JSON_OBJECT('id', u.id, 'status', COALESCE(u.status, 'active')) AS obj, JSON_ARRAYAGG(r.role_name) AS roles FROM users u`;
   const translated = translateQuery(sql);
   assert.ok(translated.text.includes("jsonb_build_object"));
@@ -69,7 +93,7 @@ test("Fix 7: translateQuery handles nested parentheses in JSON_OBJECT and JSON_A
   assert.ok(!translated.text.includes("JSON_ARRAYAGG"));
 });
 
-test("Fix 10: buildVisibleScanRows pagination partitions correctly across pages", () => {
+test("Fix 10: buildVisibleScanRows pagination partitions correctly across pages", { skip: !hasFrontend }, () => {
   const mockRows = Array.from({ length: 50 }, (_, i) => ({
     company: `Corp ${i + 1}`,
     role: "Dev",
@@ -87,7 +111,7 @@ test("Fix 10: buildVisibleScanRows pagination partitions correctly across pages"
   assert.strictEqual(page2[19].displayIndex, "40");
 });
 
-test("Fix 11: getWorkspacePath reliably resolves to repo root regardless of cwd", () => {
+test("Fix 11: getWorkspacePath reliably resolves to repo root regardless of cwd", { skip: !hasFrontend }, () => {
   const packageJsonPath = getWorkspacePath("package.json");
   assert.ok(existsSync(packageJsonPath), "package.json must exist at resolved workspace root");
 });
@@ -117,7 +141,7 @@ test("Fix 12: evaluate raw_data handles both pre-parsed objects and json strings
   assert.deepStrictEqual(parseRaw(nullVal), {});
 });
 
-test("Fix 13: toPublicFileUrl produces portable relative files URL", () => {
+test("Fix 13: toPublicFileUrl produces portable relative files URL", { skip: !hasFrontend }, () => {
   const url = toPublicFileUrl("output/resume.pdf");
   assert.strictEqual(url, "/files/output/resume.pdf");
 
@@ -128,7 +152,7 @@ test("Fix 13: toPublicFileUrl produces portable relative files URL", () => {
   assert.strictEqual(nullUrl, null);
 });
 
-test("Fix 14: writeEvaluationReport embeds userId and applicationId", async () => {
+test("Fix 14: writeEvaluationReport embeds userId and applicationId", { skip: !hasFrontend }, async () => {
   const mockResult = {
     company: "Acme Corp",
     role: "Backend Engineer",
@@ -155,7 +179,7 @@ test("Fix 14: writeEvaluationReport embeds userId and applicationId", async () =
   } catch {}
 });
 
-test("Fix 15: saveOpsSettings and loadOpsSettings are isolated per user", () => {
+test("Fix 15: saveOpsSettings and loadOpsSettings are isolated per user", { skip: !hasFrontend }, () => {
   const user1 = 10101;
   const user2 = 20202;
 

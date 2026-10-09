@@ -2,25 +2,41 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
-import { app } from "../frontend/server/index.js";
-import { generateToken, issueTicket, consumeTicket } from "../frontend/server/utils/tokenAuth.js";
-import { query } from "../frontend/server/utils/db.js";
 
-// Helper to start an ephemeral test server instance
-function createTestServer() {
-  return new Promise((resolve) => {
-    const server = app.listen(0, "127.0.0.1", () => {
-      const { port } = server.address();
-      resolve({
-        server,
-        baseUrl: `http://127.0.0.1:${port}`,
-        close: () => new Promise((res) => server.close(res))
-      });
-    });
-  });
+const hasFrontend = fs.existsSync(path.resolve("frontend/server/index.js"));
+
+let app, generateToken, issueTicket, consumeTicket, query;
+if (hasFrontend) {
+  const index = await import("../frontend/server/index.js");
+  const tokenAuth = await import("../frontend/server/utils/tokenAuth.js");
+  const db = await import("../frontend/server/utils/db.js");
+  app = index.app;
+  generateToken = tokenAuth.generateToken;
+  issueTicket = tokenAuth.issueTicket;
+  consumeTicket = tokenAuth.consumeTicket;
+  query = db.query;
 }
 
-test("T4: Security headers and disabling of x-powered-by", async () => {
+if (!hasFrontend) {
+  test("Frontend security and auth tests", (t) => {
+    t.skip("frontend/ directory is excluded from standalone CLI distribution");
+  });
+} else {
+  // Helper to start an ephemeral test server instance
+  function createTestServer() {
+    return new Promise((resolve) => {
+      const server = app.listen(0, "127.0.0.1", () => {
+        const { port } = server.address();
+        resolve({
+          server,
+          baseUrl: `http://127.0.0.1:${port}`,
+          close: () => new Promise((res) => server.close(res))
+        });
+      });
+    });
+  }
+
+  test("T4: Security headers and disabling of x-powered-by", async () => {
   const { baseUrl, close } = await createTestServer();
   try {
     const res = await fetch(`${baseUrl}/health`);
@@ -229,3 +245,4 @@ test("CodeRabbit: /api/config/cv-pdf allows unauthenticated onboarding upload wh
     await close();
   }
 });
+}

@@ -2,9 +2,54 @@
 
 > Autonomous, zero-operating-cost AI job pipeline for scanning, evaluating, and tailoring applications for early-career software engineering roles.
 
-[![CI](https://github.com/your-org/job-ops/actions/workflows/ci.yml/badge.svg)](https://github.com/your-org/job-ops/actions/workflows/ci.yml)
+[![CI](https://github.com/anshuldeoli04/JOB-OPS/actions/workflows/ci.yml/badge.svg)](https://github.com/anshuldeoli04/JOB-OPS/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D20.0.0-brightgreen.svg)](https://nodejs.org)
+
+---
+
+## ⚡ End-to-End Pipeline Workflow
+
+```mermaid
+flowchart TD
+    subgraph S1["1. Multi-Board Discovery"]
+        CLI["💻 CLI Trigger<br/><code>node autoflow.mjs</code>"] --> SCAN["🔍 Scanner Engine<br/><code>scanner.mjs</code>"]
+        BOARDS[("🌐 Public Job Boards<br/>Greenhouse • Lever • Ashby • Careers Pages")] --> SCAN
+    end
+
+    subgraph S2["2. Smart Pre-Filtering & Pre-Ranking"]
+        SCAN --> FILTER{"⚡ Fast Filter<br/>Title stoplist • Slug regex • Experience fit"}
+        FILTER -- "Pass" --> RANK["📊 Batch Pre-Ranker<br/>Deterministic keyword & title scoring"]
+        FILTER -- "Reject" --> DROP1["❌ Drop (Zero API Cost)"]
+    end
+
+    subgraph S3["3. AI Candidate Fit Evaluation"]
+        RANK --> GEMINI["🤖 Google Gemini 2.5 Flash<br/>Fit Score • Grade A/B/C/D • Strengths & Gaps"]
+        GEMINI -- "429 / Rate Limit" --> GROQ["🔀 Groq Fallback<br/>Llama 3.3 Versatile"]
+        GEMINI -- "Grade C/D/F" --> DROP2["💾 Save to Scan Cache (Skip Resume)"]
+    end
+
+    subgraph S4["4. Anti-Hallucination Resume Tailoring"]
+        GEMINI -- "Grade A/B Match" --> TAILOR["📝 Resume Tailor<br/><code>resume-builder.mjs</code><br/>Targeted summary • Skill alignment • Zero fake facts"]
+        GROQ --> TAILOR
+    end
+
+    subgraph S5["5. PDF Generation & Application Tracking"]
+        TAILOR --> PDF["📄 Playwright Engine<br/><code>generate-pdf.mjs</code><br/>Pixel-perfect ATS PDF"]
+        PDF --> DATA[("📁 Local JSON Storage<br/><code>data/applications.json</code>")]
+        DATA --> TRACKER["🎯 Interactive Tracker<br/><code>node tracker.mjs</code>"]
+    end
+
+    classDef primary fill:#1e293b,stroke:#3b82f6,stroke-width:2px,color:#f8fafc;
+    classDef ai fill:#1e1b4b,stroke:#8b5cf6,stroke-width:2px,color:#f8fafc;
+    classDef success fill:#064e3b,stroke:#10b981,stroke-width:2px,color:#f8fafc;
+    classDef drop fill:#3f1818,stroke:#ef4444,stroke-width:1px,color:#fca5a5;
+
+    class CLI,SCAN,FILTER,RANK primary;
+    class GEMINI,GROQ ai;
+    class TAILOR,PDF,DATA,TRACKER success;
+    class DROP1,DROP2 drop;
+```
 
 ---
 

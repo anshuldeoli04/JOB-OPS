@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 /**
  * JOB-OPS AutoFlow v4 (Interactive Human-in-the-Loop Pipeline)
  *

@@ -25,13 +25,12 @@ flowchart TD
 
     subgraph S3["3. AI Candidate Fit Evaluation"]
         RANK --> GEMINI["🤖 Google Gemini 2.5 Flash<br/>Fit Score • Grade A/B/C/D • Strengths & Gaps"]
-        GEMINI -- "429 / Rate Limit" --> GROQ["🔀 Groq Fallback<br/>Llama 3.3 Versatile"]
+        GEMINI -- "Daily Limit / 429" --> PAUSE["⏸️ Rate Limit / Cooldown<br/>Pauses or stops at daily quota limit"]
         GEMINI -- "Grade C/D/F" --> DROP2["💾 Save to Scan Cache (Skip Resume)"]
     end
 
-    subgraph S4["4. Anti-Hallucination Resume Tailoring"]
-        GEMINI -- "Grade A/B Match" --> TAILOR["📝 Resume Tailor<br/><code>resume-builder.mjs</code><br/>Targeted summary • Skill alignment • Zero fake facts"]
-        GROQ --> TAILOR
+    subgraph S4["4. Resume Tailoring"]
+        GEMINI -- "Grade A/B Match" --> TAILOR["📝 Resume Tailor<br/><code>resume-builder.mjs</code><br/>Targeted summary • Skill alignment • CV-grounded"]
     end
 
     subgraph S5["5. PDF Generation & Application Tracking"]
@@ -46,7 +45,7 @@ flowchart TD
     classDef drop fill:#3f1818,stroke:#ef4444,stroke-width:1px,color:#fca5a5;
 
     class CLI,SCAN,FILTER,RANK primary;
-    class GEMINI,GROQ ai;
+    class GEMINI,PAUSE ai;
     class TAILOR,PDF,DATA,TRACKER success;
     class DROP1,DROP2 drop;
 ```
@@ -57,7 +56,7 @@ flowchart TD
 
 JOB-OPS is designed around three strict operational constraints:
 1. **Zero Operating Cost**: Built to run entirely on free-tier APIs and local hardware. No subscriptions, hosted proxies, or paid vector databases required.
-2. **Bring Your Own Key (BYOK)**: Scans and evaluations run locally against your personal Gemini or Groq API keys. Your keys and CV data never leave your machine.
+2. **Bring Your Own Key (BYOK)**: Your API keys stay on your machine (`.env`). Your CV and job descriptions are sent to the LLM provider you configure (Google Gemini, optionally Groq) for scoring and tailoring. See Disclaimers.
 3. **Autonomous CLI Architecture**:
    - Standalone command-line workflow backed by atomic JSON disk storage (`data/`). Requires zero database configuration, zero background services, and runs entirely in your terminal.
 
@@ -84,26 +83,23 @@ The scanner queries 7 distinct channels, each classified using a dedicated fetch
 
 ## 🚀 Quick Start (CLI Mode - 5 Minutes)
 
-### 1. Installation
+### 1. Installation & Guided Setup
 
-**Windows:**
-```cmd
-SETUP.bat
-```
-
-**macOS / Linux:**
+**Recommended: Interactive Onboarding Wizard**
 ```bash
-chmod +x setup.sh
-./setup.sh
+npm install
+npm run setup
+node setup-check.mjs
 ```
 
-Or manually:
+Or configure manually:
 ```bash
 npm install
 npx playwright install chromium
-cp config.example.json config.json
+cp config.example.json config.local.json
 cp env.example .env
 cp cv.example.md cv.md
+node setup-check.mjs
 ```
 
 ### 2. Configure Your API Key
@@ -138,12 +134,17 @@ The primary driver for hands-free or interactive job hunting:
 ```bash
 node autoflow.mjs
 ```
-- **Step 1**: Discovers new jobs across Greenhouse, Lever, Ashby, Internshala, Naukri, and verified company career pages.
+- **Step 1**: Discovers new jobs across enabled sources (Greenhouse, Lever, Ashby, and verified career pages by default; Internshala and Naukri are opt-in).
 - **Step 2**: Prompts for confirmation and batch-evaluates matching candidates using Gemini 2.5 Flash.
-- **Step 3**: Renders a ranked candidate matrix and automatically generates tailored resumes for top-tier matches.
+- **Step 3**: Renders a ranked candidate matrix and generates tailored resumes for selected matches (or automatically via `--auto-tailor` / `--yes`, bounded by `--tailor-top=N`).
+
+#### Autoflow Exit Codes
+- `0`: Pipeline completed successfully.
+- `1`: Execution error encountered.
+- `2`: Daily quota limit reached or user aborted.
 
 ### 2. Live Job Scanner (`scanner.mjs`)
-Scans all 7 supported sources without modifying existing application records:
+Scans all enabled sources without modifying existing application records:
 ```bash
 # Scan all enabled channels
 node scanner.mjs
@@ -153,7 +154,7 @@ node scanner.mjs --sources=ashby,greenhouse --keywords=backend,engineer
 ```
 
 #### Enabling Browser Sources (Naukri, Internshala, Wellfound)
-Official public APIs (Greenhouse, Lever, Ashby) and standard careers pages are enabled by default for sub-5-second scans. Stealth browser-based sources require Playwright Chromium and are opt-in.
+Official public APIs (Greenhouse, Lever, Ashby) and standard careers pages are enabled by default. Stealth browser-based sources require Playwright Chromium and are opt-in.
 To enable browser sources:
 1. Ensure Playwright Chromium is installed: `npx playwright install chromium`
 2. In `config.local.json` (or `config.json`), remove them from `disabled_sources`:

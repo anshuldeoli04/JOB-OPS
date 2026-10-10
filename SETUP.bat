@@ -88,7 +88,12 @@ echo.
 echo  ============================================
 echo   Setup complete!
 echo.
+echo   NEXT STEPS:
+echo   - Run 'npm run setup' for guided onboarding (recommended).
+echo   - Or add your Gemini API key to .env and edit cv.md.
+echo.
 echo   CLI COMMANDS:
+echo   - npm run setup              : Guided onboarding wizard
 echo   - node scanner.mjs          : Scan job boards for new openings
 echo   - node scan-evaluate.mjs     : Batch evaluate discovered jobs
 echo   - node evaluate.mjs          : Evaluate any single job posting

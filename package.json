@@ -1,6 +1,7 @@
 {
   "name": "job-ops",
   "version": "4.0.0",
+  "private": true,
   "type": "module",
   "description": "Autonomous AI job pipeline for scanning, evaluating, and tailoring applications for early-career software roles.",
   "license": "MIT",
@@ -13,8 +14,7 @@
     "templates/",
     "companies.json",
     "config.example.json",
-    "cv.example.md",
-    "schema_pg.sql"
+    "cv.example.md"
   ],
   "engines": {
     "node": ">=20.0.0"
@@ -22,7 +22,6 @@
   "scripts": {
     "install:browsers": "npx playwright install chromium",
     "test": "node --import ./test/setup.mjs --test test/*.test.mjs",
-    "test:offline": "node --import ./test/setup.mjs --test test/*.test.mjs",
     "smoke": "node test/smoke.test.mjs",
     "evaluate": "node evaluate.mjs",
     "tracker": "node tracker.mjs",
@@ -31,7 +30,6 @@
     "retry-errors": "node scan-evaluate.mjs --retry-errors --mode=all",
     "resume": "node resume-builder.mjs",
     "setup": "node setup-wizard.mjs",
-    "init": "node setup-wizard.mjs",
     "setup-check": "node setup-check.mjs",
     "autoflow": "node autoflow.mjs"
   },

@@ -14,7 +14,6 @@ We acknowledge reports within 72 hours and aim to publish a fix or advisory with
 
 ## Local Security Architecture
 
-JOB-OPS is designed primarily as a local developer automation tool:
-- **Loopback Binding**: By default, the bridge server strictly listens on `127.0.0.1`. Do not expose it publicly without reverse proxy authentication and HTTPS.
-- **Process Isolation**: Subprocesses spawned by the server inherit a strictly sanitized environment (`sanitizeChildEnv`). Database credentials, encryption master keys, and session secrets are never passed down to child processes or scraper runtimes.
-- **Secrets & Keys**: Bring Your Own Key (BYOK) architecture. API keys are stored locally in `.env` (CLI) or encrypted in PostgreSQL (Web UI). Never commit `.env` or `config.local.json`.
+JOB-OPS is designed as a standalone local developer CLI tool:
+- **Process Isolation**: Subprocesses spawned by the CLI inherit a strictly sanitized environment (`sanitizeChildEnv`). System secrets, private credentials, and unrelated environment variables are stripped before executing child processes or scraper runtimes.
+- **Secrets & Credentials**: Bring Your Own Key (BYOK) architecture. API keys are stored locally in `.env`. Never commit `.env` or `config.local.json` to version control.

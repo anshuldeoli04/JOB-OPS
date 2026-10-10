@@ -542,7 +542,7 @@ export function loadConfig({ requireApiKey = true } = {}) {
   const baseConfig = loadJsonFile(path.resolve(REPO_ROOT, "config.json"), { fallback: null });
   const localConfig = loadJsonFile(path.resolve(REPO_ROOT, "config.local.json"), { fallback: null });
   if (!baseConfig && !localConfig) {
-    throw new Error("Config file missing. Create config.local.json from config.json first.");
+    throw new Error("Config file missing. Run `npm run setup` to configure JOB-OPS.");
   }
 
   const jsonConfig = { ...(baseConfig || {}), ...(localConfig || {}) };

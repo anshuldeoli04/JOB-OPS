@@ -594,7 +594,7 @@ async function scanAshby(companies, keywords, config, experienceProfile) {
       });
 
       matched.forEach((job) => {
-        const cleanContent = (job.descriptionPlain || job.descriptionHtml || "").trim();
+        const cleanContent = (job.descriptionPlain || stripHtml(job.descriptionHtml) || "").trim();
         pushIfExperienceFit(results, {
           source: "ashby",
           company: company.name,

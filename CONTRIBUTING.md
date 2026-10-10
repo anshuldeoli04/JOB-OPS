@@ -20,10 +20,12 @@ By submitting a pull request or patch to JOB-OPS, you agree that your contributi
    - Ensure all automated tests pass before opening a PR:
      ```bash
      npm test
-     npm run test:offline
      ```
    - If adding new features, include corresponding tests under `test/`.
 4. **Pre-Commit Verification**:
    - Never commit sensitive files (`.env`, personal resumes, API keys, or data directories).
    - Ensure all code and comments use clear, professional English.
 5. **Open a Pull Request**: Provide a concise summary of changes and attach test output evidence.
+6. **Public Tree Synchronization**:
+   - The public repository's `main` branch receives exported content built via `scripts/export-public.sh` or reviewed pull requests.
+   - Run `scripts/export-public.sh` to build a clean standalone CLI distribution verified against leak guards and blocklists.

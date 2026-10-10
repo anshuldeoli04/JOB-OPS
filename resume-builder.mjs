@@ -20,6 +20,7 @@ import {
   writeJsonFileAtomic,
 } from "./config-utils.mjs";
 import { callLLM } from "./llm/llmClient.mjs";
+import { validateFactGrounding } from "./llm/factValidator.mjs";
 
 const TEMPLATE_FILE = "./templates/resume-template.html";
 const OUTPUT_DIR = "./output/resumes";
@@ -295,43 +296,24 @@ function renderHTML(d, template) {
 }
 function generatePDF(htmlFile, pdfFile) {
   return new Promise((resolve, reject) => {
-    const commands = [
-      { cmd: process.execPath, args: ["./generate-pdf.mjs", htmlFile, pdfFile] },
-      ...(process.platform === "win32"
-        ? [
-            { cmd: "python", args: ["./generate-pdf.py", htmlFile, pdfFile] },
-            { cmd: "py", args: ["./generate-pdf.py", htmlFile, pdfFile] },
-          ]
-        : [
-            { cmd: "python3", args: ["./generate-pdf.py", htmlFile, pdfFile] },
-            { cmd: "python", args: ["./generate-pdf.py", htmlFile, pdfFile] },
-          ]),
-    ];
-    const tryCommand = (index) => {
-      const { cmd, args } = commands[index];
-      const proc = spawn(cmd, args);
-      let out = "";
-      proc.stdout.on("data", (d) => {
-        out += d;
-      });
-      proc.stderr.on("data", (d) => {
-        out += d;
-      });
-      proc.on("close", (code) => {
-        if (code === 0 && out.includes("SUCCESS")) {
-          resolve(pdfFile);
-        } else if (index < commands.length - 1) {
-          tryCommand(index + 1);
-        } else {
-          reject(new Error(out.trim().slice(0, 200)));
-        }
-      });
-      proc.on("error", () => {
-        if (index < commands.length - 1) tryCommand(index + 1);
-        else reject(new Error("PDF generator runtime not found."));
-      });
-    };
-    tryCommand(0);
+    const proc = spawn(process.execPath, ["./generate-pdf.mjs", htmlFile, pdfFile]);
+    let out = "";
+    proc.stdout.on("data", (d) => {
+      out += d;
+    });
+    proc.stderr.on("data", (d) => {
+      out += d;
+    });
+    proc.on("close", (code) => {
+      if (code === 0 && out.includes("SUCCESS")) {
+        resolve(pdfFile);
+      } else {
+        reject(new Error(out.trim().slice(0, 200) || "PDF generation failed."));
+      }
+    });
+    proc.on("error", (err) => {
+      reject(new Error(`PDF generator error: ${err.message}`));
+    });
   });
 }
 
@@ -468,6 +450,39 @@ async function main() {
     });
     const rawText = raw?.text || String(raw);
     resumeData = JSON.parse(rawText.replace(/```json\n?|```\n?/g, "").trim());
+
+    // Deterministic Fact-Grounding Verification (T9)
+    const check = validateFactGrounding(resumeData, cv);
+    if (!check.isValid) {
+      console.warn(`[WARN] Fact validation detected ${check.violations.length} ungrounded item(s):`);
+      check.violations.slice(0, 3).forEach((v) => console.warn(`   - ${v}`));
+      console.log("Retrying tailoring once with strict grounding constraints...");
+      try {
+        const retryPrompt = `${buildPrompt(cv, jobContext)}\n\nIMPORTANT: Your previous output had ungrounded claims:\n${check.violations.map((v) => `- ${v}`).join("\n")}\nStrictly fix these and include ONLY facts, skills, numbers, and companies directly found in the ORIGINAL CV.`;
+        const retryRaw = await callLLM("tailor_resume", [{ role: "user", content: retryPrompt }], {
+          config,
+          temperature: 0.0,
+          maxOutputTokens: 8192,
+          responseFormat: { type: "json_object" },
+          allowGroqFallback: true,
+        });
+        const retryText = retryRaw?.text || String(retryRaw);
+        const retryData = JSON.parse(retryText.replace(/```json\n?|```\n?/g, "").trim());
+        const retryCheck = validateFactGrounding(retryData, cv);
+        if (retryCheck.isValid) {
+          console.log("[OK] Retry successfully satisfied fact-grounding checks.");
+          resumeData = retryData;
+        } else {
+          console.warn("[WARN] Retry also contained ungrounded items. Falling back to base untailored resume.");
+          resumeData = buildFallbackResumeData(cv, jobContext);
+          usedFallback = true;
+        }
+      } catch (retryErr) {
+        console.warn("[WARN] Retry failed. Falling back to base untailored resume.");
+        resumeData = buildFallbackResumeData(cv, jobContext);
+        usedFallback = true;
+      }
+    }
   } catch (error) {
     usedFallback = true;
     console.error("[WARN] Gemini unavailable or parse failed. Generating conservative fallback resume.\n", error.message.slice(0, 120));

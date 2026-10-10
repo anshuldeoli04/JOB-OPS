@@ -21,7 +21,7 @@
   },
   "scripts": {
     "install:browsers": "npx playwright install chromium",
-    "test": "node --import ./test/setup.mjs --test test/*.test.mjs",
+    "test": "node test/runner.mjs",
     "smoke": "node test/smoke.test.mjs",
     "evaluate": "node evaluate.mjs",
     "tracker": "node tracker.mjs",

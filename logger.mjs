@@ -12,3 +12,5 @@ export const logger = {
   warn: (message, ...args) => logAt("warn", "warn", message, ...args),
   error: (message, ...args) => logAt("error", "error", message, ...args),
 };
+
+export default logger;

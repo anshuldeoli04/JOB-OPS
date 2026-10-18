@@ -466,3 +466,6 @@ export function isJobTitleValid(title) {
 
   return true;
 }
+
+export { validateSafeUrl, isSafeUrl } from "./src/utils/urlValidator.mjs";
+

@@ -48,6 +48,7 @@ ALLOWLIST_FILES=(
 )
 
 ALLOWLIST_DIRS=(
+  "src"
   "llm"
   "templates"
   "test"

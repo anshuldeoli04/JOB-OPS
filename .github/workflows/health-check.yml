@@ -30,10 +30,13 @@ jobs:
         run: npm ci
 
       - name: Verify ATS Endpoints & Slugs
-        run: node scanner.mjs --verify-sources
+        run: |
+          mkdir -p data
+          node scanner.mjs --verify-sources
 
       - name: Upload Health Verification Artifact
         uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: verify-sources
           path: data/verify-sources.json

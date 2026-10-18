@@ -69,6 +69,26 @@ if (configFile) {
   }
 }
 
+const secretFiles = [".env", ".env.local", "config.local.json"].filter((f) => fs.existsSync(f));
+let permissionsSafe = true;
+if (process.platform !== "win32") {
+  for (const f of secretFiles) {
+    try {
+      const mode = fs.statSync(f).mode;
+      if ((mode & 0o077) !== 0) {
+        permissionsSafe = false;
+        break;
+      }
+    } catch {}
+  }
+}
+check(
+  "Secrets file permissions restricted (0600)",
+  permissionsSafe,
+  "Run `chmod 600 .env config.local.json` to prevent non-privileged users from reading secret keys"
+);
+
+
 check("cv.md exists", fs.existsSync("./cv.md"), "Create cv.md and write your resume in Markdown format");
 
 if (fs.existsSync("./cv.md")) {

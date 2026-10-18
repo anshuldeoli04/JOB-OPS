@@ -102,3 +102,10 @@ test("Smoke Test: Runtime import of all entry and core modules", async () => {
     assert.ok(imported, `Module ${mod} must import successfully`);
   }
 });
+
+test("Smoke Test: getDataDir creates data directory if missing", async () => {
+  const { getDataDir } = await import("../src/config/configPaths.mjs");
+  const dir = getDataDir();
+  assert.ok(fs.existsSync(dir), "getDataDir must ensure data directory exists");
+});
+

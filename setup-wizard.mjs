@@ -403,6 +403,9 @@ export async function runSetupWizard({ interactive = true, checkOnly = false } =
         ["wellfound", "naukri", "internshala"],
     };
     writeJsonFileAtomic(CONFIG_LOCAL_FILE, configData);
+    try {
+      fs.chmodSync(CONFIG_LOCAL_FILE, 0o600);
+    } catch {}
     console.log("✅ User preferences saved to config.local.json");
 
     // Summary Card

@@ -8,8 +8,18 @@
 node_modules/
 frontend/node_modules/
 
-# Exclude Web Dashboard & Server (CLI-Only Release)
-frontend/
+# Frontend Build & Artifacts
+frontend/dist/
+frontend/temp-dist/
+frontend/server/data/
+frontend/server/db/
+frontend/*.log
+frontend/*.txt
+
+# SQLite temporary & WAL files
+*.db-journal
+*.db-wal
+*.db-shm
 
 # Environment Variables & Secrets (All variants across root and frontend)
 .env

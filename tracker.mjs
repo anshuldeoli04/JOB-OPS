@@ -8,7 +8,12 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import readline from "readline";
-import { APPLICATIONS_FILE, loadApplications, withFileLockSync, writeJsonFileAtomic } from "./config-utils.mjs";
+import {
+  APPLICATIONS_FILE,
+  loadApplications,
+  saveApplications,
+  withFileLockSync,
+} from "./config-utils.mjs";
 
 const PAGE_SIZE = 15;
 const TABLE_WIDTH = 108;
@@ -20,12 +25,8 @@ function gradeLabel(grade) {
 
 function statusLabel(status) {
   const labels = {
-    evaluated: "[eval]",
-    applied: "[applied]",
-    interview: "[interview]",
-    offer: "[offer]",
-    rejected: "[rejected]",
-    withdrawn: "[withdrawn]",
+    evaluated: "[eval]", applied: "[applied]", interview: "[interview]",
+    offer: "[offer]", rejected: "[rejected]", withdrawn: "[withdrawn]",
   };
   return labels[status] || "[eval]";
 }
@@ -66,8 +67,7 @@ function displayTable(apps, page = 1, gradeFilter = null) {
   const offers = apps.filter((a) => a.status === "offer").length;
   const scoredApps = apps.filter((a) => Number.isFinite(Number(a.score)));
   const avgScore = scoredApps.length
-    ? (scoredApps.reduce((sum, a) => sum + Number(a.score), 0) / scoredApps.length).toFixed(1)
-    : "-";
+    ? (scoredApps.reduce((sum, a) => sum + Number(a.score), 0) / scoredApps.length).toFixed(1) : "-";
   const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
   const currentPage = Math.min(Math.max(page, 1), totalPages);
   const startIndex = (currentPage - 1) * PAGE_SIZE;
@@ -79,15 +79,7 @@ function displayTable(apps, page = 1, gradeFilter = null) {
   }
   console.log(`Page ${currentPage}/${totalPages} | Showing ${pageItems.length} of ${sorted.length}`);
   console.log("-".repeat(TABLE_WIDTH));
-  console.log(
-    "# ".padEnd(4) +
-      "Grade".padEnd(8) +
-      "Score".padEnd(7) +
-      "Company".padEnd(22) +
-      "Role".padEnd(28) +
-      "Status".padEnd(16) +
-      "Location"
-  );
+  console.log("# ".padEnd(4) + "Grade".padEnd(8) + "Score".padEnd(7) + "Company".padEnd(22) + "Role".padEnd(28) + "Status".padEnd(16) + "Location");
   console.log("-".repeat(TABLE_WIDTH));
 
   pageItems.forEach((app, index) => {
@@ -97,18 +89,8 @@ function displayTable(apps, page = 1, gradeFilter = null) {
     const role = truncate(app.role || "Unknown", 26).padEnd(28);
     const status = truncate(`${statusLabel(app.status)} ${app.status || "?"}`, 14).padEnd(16);
     const location = truncate(app.location || "?", 24);
-
-    console.log(
-      String(startIndex + index + 1).padEnd(4) +
-        grade.padEnd(8) +
-        score +
-        company +
-        role +
-        status +
-        location
-    );
+    console.log(String(startIndex + index + 1).padEnd(4) + grade.padEnd(8) + score + company + role + status + location);
   });
-
   console.log("-".repeat(TABLE_WIDTH));
 }
 
@@ -134,7 +116,7 @@ function saveApplicationStatus(appId, status) {
     const idx = latestApps.findIndex((app) => app.id === appId);
     if (idx < 0) return null;
     latestApps[idx].status = status;
-    writeJsonFileAtomic(APPLICATIONS_FILE, latestApps, { lock: false });
+    saveApplications(latestApps);
     return latestApps;
   });
 }
@@ -142,7 +124,6 @@ function saveApplicationStatus(appId, status) {
 async function updateStatus(app) {
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
   const statuses = ["evaluated", "applied", "interview", "offer", "rejected", "withdrawn"];
-
   console.log("\nUpdate application status:");
   statuses.forEach((status, i) => console.log(`   ${i + 1}. ${statusLabel(status)} ${status}`));
 
@@ -188,17 +169,13 @@ async function main() {
   let gradeFilter = null;
   displayTable(apps, currentPage, gradeFilter);
 
-  console.log("\nOptions:");
-  console.log("  - View details          -> enter application number (e.g. 1)");
-  console.log("  - Update status         -> 'u' then enter number");
-  console.log("  - Next / previous page  -> 'n' / 'p'");
-  console.log("  - Filter by grade       -> 'A', 'B', 'C', 'D', 'F' | clear filter -> 'all'");
-  console.log("  - Exit                  -> 'q'");
+  console.log("\nOptions:\n  - View details          -> enter application number (e.g. 1)");
+  console.log("  - Update status         -> 'u' then enter number\n  - Next / previous page  -> 'n' / 'p'");
+  console.log("  - Filter by grade       -> 'A', 'B', 'C', 'D', 'F' | clear filter -> 'all'\n  - Exit                  -> 'q'");
 
   while (true) {
     const input = await askQuestion("\n> ");
     const normalizedInput = input.toLowerCase();
-
     if (normalizedInput === "q") break;
     if (normalizedInput === "n") {
       const totalPages = Math.max(1, Math.ceil(getSortedApps(apps, gradeFilter).length / PAGE_SIZE));
@@ -206,13 +183,11 @@ async function main() {
       displayTable(apps, currentPage, gradeFilter);
       continue;
     }
-
     if (normalizedInput === "p") {
       currentPage = Math.max(currentPage - 1, 1);
       displayTable(apps, currentPage, gradeFilter);
       continue;
     }
-
     if (normalizedInput === "u") {
       const numStr = await askQuestion("Select application to update status (number): ");
       const num = parseInt(numStr, 10) - 1;
@@ -224,14 +199,12 @@ async function main() {
       }
       continue;
     }
-
     if (["a", "b", "c", "d", "f"].includes(normalizedInput)) {
       gradeFilter = normalizedInput.toUpperCase();
       currentPage = 1;
       displayTable(apps, currentPage, gradeFilter);
       continue;
     }
-
     if (normalizedInput === "all") {
       gradeFilter = null;
       currentPage = 1;
@@ -247,7 +220,6 @@ async function main() {
       console.log("Invalid input");
     }
   }
-
   console.log("\nTracker closed.\n");
 }
 

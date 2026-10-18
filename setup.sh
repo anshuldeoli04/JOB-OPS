@@ -51,6 +51,14 @@ if [ ! -f ".env" ]; then
     echo " [OK] Created .env from template."
 fi
 
+# SEC-3: Enforce strict file permissions on secrets and local configurations
+if [ -f ".env" ]; then
+    chmod 600 .env
+fi
+if [ -f "config.local.json" ]; then
+    chmod 600 config.local.json
+fi
+
 if [ ! -f "cv.md" ]; then
     cp cv.example.md cv.md
     echo " [OK] Initialized cv.md from cv.example.md template."
